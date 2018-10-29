@@ -314,6 +314,16 @@ module ActiveModel
       expect(attribute).to be_changed
     end
 
+    specify "unmarshaling dump from Ruby implementation" do
+      attr = RailsFastAttributes::ORIGINAL_ATTRIBUTE.from_database(:foo, 1, Type::Value.new).with_value_from_user(2)
+      ruby_dump = Marshal.dump(attr)
+      Marshal.load(ruby_dump)
+    end
+
+    specify "marshaling should raise" do
+      expect { Marshal.dump(Attribute.from_database(:foo, 1, Type::Integer.new)) }.to raise_error(/does not support/)
+    end
+
     def attribute_from_user(name, value, type)
       Attribute.from_user(name, value, type, Attribute.uninitialized(name, type))
     end

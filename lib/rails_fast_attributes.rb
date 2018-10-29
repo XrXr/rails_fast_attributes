@@ -23,6 +23,10 @@ module RailsFastAttributes
       ORIGINAL_ATTRIBUTE.null(name)
     end
 
+    def marshal_dump
+      raise "rails_fast_attributes does not support marshal dumping (for now)"
+    end
+
     FromDatabase = self
     FromUser = self
     WithCastValue = self
