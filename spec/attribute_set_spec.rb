@@ -127,6 +127,25 @@ module ActiveModel
       expect(duped[:bar].value).to eq("foobar")
     end
 
+    specify "deep_dup use after free" do
+      name_to_type = {}
+      100.times { |name| name_to_type[name.to_s.to_sym] = Type::String.new }
+      name_to_value = name_to_type.transform_values { '7' * 2000 }
+
+      builder = AttributeSet::Builder.new(name_to_type)
+      attributes = builder.build_from_database(name_to_value)
+      attributes.each_value(&:value)
+
+      begin
+        GC.stress = true
+        new_attributes = attributes.deep_dup
+      ensure
+        GC.stress = false
+      end
+
+      100.times { |key| expect(new_attributes[key.to_s.to_sym].value).to eq(Integer('7' * 2000)) }
+    end
+
     specify "freezing cloned set does not freeze original" do
       attributes = AttributeSet.new({})
       clone = attributes.clone
@@ -452,6 +471,22 @@ module ActiveModel
       GC.start
       expect(attribute.value).to eq(Integer("1" * 200))
     end
+
+    def return_dup
+      builder = AttributeSet::Builder.new(foo: Type::Integer.new, bar: Type::String.new)
+      attributes = builder.build_from_database(foo: 1, bar: "foo")
+
+      attributes.dup
+    end
+
+    specify "instance from #dup can outlive the original" do
+      set = return_dup
+      10000.times { return_dup }
+      GC.start
+      expect(set.fetch_value(:foo)).to eq(1)
+      expect(set.fetch_value(:bar)).to eq("foo")
+    end
+
 
     specify "attribute handle marshalling" do
       attribute = Attribute.from_database(:foo, '50', Type::Integer.new)

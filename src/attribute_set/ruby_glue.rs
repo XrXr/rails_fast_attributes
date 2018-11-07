@@ -271,7 +271,7 @@ extern "C" fn reset(this: ffi::VALUE, key: ffi::VALUE) -> ffi::VALUE {
 extern "C" fn initialize_copy(this_ptr: ffi::VALUE, other: ffi::VALUE) -> ffi::VALUE {
     let this = unsafe { get_struct_mut::<AttributeSet>(this_ptr) };
     let other = unsafe { get_struct::<AttributeSet>(other) };
-    this.clone_from(other);
+    this.attributes.clone_from(&other.attributes);
     this_ptr
 }
 
