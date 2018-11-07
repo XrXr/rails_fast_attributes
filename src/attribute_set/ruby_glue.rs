@@ -125,8 +125,8 @@ pub unsafe fn init() {
     ffi::rb_define_method(attribute_set, cstr!("accessed"), accessed as *const _, 0);
     ffi::rb_define_method(attribute_set, cstr!("map"), map as *const _, 0);
     ffi::rb_define_method(attribute_set, cstr!("=="), equals as *const _, 1);
-    ffi::rb_define_method(attribute_set, cstr!("_dump_data"), dump_data as *const _, 0);
-    ffi::rb_define_method(attribute_set, cstr!("_load_data"), load_data as *const _, 1);
+    ffi::rb_define_method(attribute_set, cstr!("marshal_dump"), dump_data as *const _, 0);
+    ffi::rb_define_method(attribute_set, cstr!("marshal_load"), load_data as *const _, 1);
     ffi::rb_define_method(attribute_set, cstr!("init_with"), init_with as *const _, 1);
     ffi::rb_define_method(attribute_set, cstr!("except"), except as *const _, -1);
 }

@@ -440,17 +440,23 @@ module ActiveModel
       expect(attribute.value).to eq(Integer("1" * 200))
     end
 
-    def run_dump_data
+    def run_marshal_dump
       builder = AttributeSet::Builder.new(foo: Type::Integer.new)
       attributes = builder.build_from_database(foo: "1" * 200)
-      attributes._dump_data.first
+      attributes.marshal_dump.first
     end
 
-    specify "attributes from #_dump_data" do
-      attribute = run_dump_data
-      100.times { run_dump_data }
+    specify "attributes from #marshal_dump" do
+      attribute = run_marshal_dump
+      100.times { run_marshal_dump }
       GC.start
       expect(attribute.value).to eq(Integer("1" * 200))
+    end
+
+    specify "attribute handle marshalling" do
+      attribute = Attribute.from_database(:foo, '50', Type::Integer.new)
+      set = AttributeSet.new(foo: attribute)
+      expect(Marshal.dump(attribute)).to eq(Marshal.dump(set[:foo]))
     end
   end
 end

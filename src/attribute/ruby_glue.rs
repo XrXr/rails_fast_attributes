@@ -170,8 +170,8 @@ pub unsafe fn init() {
         initialize_dup as *const _,
         1,
     );
-    ffi::rb_define_method(attribute, cstr!("_dump_data"), dump_data as *const _, 0);
-    ffi::rb_define_method(attribute, cstr!("_load_data"), load_data as *const _, 1);
+    ffi::rb_define_method(attribute, cstr!("marshal_dump"), dump_data as *const _, 0);
+    ffi::rb_define_method(attribute, cstr!("marshal_load"), load_data as *const _, 1);
     ffi::rb_define_method(attribute, cstr!("encode_with"), encode_with as *const _, 1);
     ffi::rb_define_method(
         attribute,
