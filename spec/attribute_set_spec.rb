@@ -298,5 +298,49 @@ module ActiveModel
       expect { attributes.write_cast_value(:foo, 1) }.to raise_error(RuntimeError)
       expect { attributes.reset(:foo) }.to raise_error(RuntimeError)
     end
+
+    specify "gc during map" do
+      attribute_hash = (1..100).map do |i|
+        name = i.to_s
+        [name, Attribute.from_database(name, '0', Type::String.new)]
+      end.to_h
+      attributes = AttributeSet.new(attribute_hash)
+
+      new_attributes = attributes.map do |attr|
+        GC.start
+        # A long string to entice the GC
+        data = String.new('-' * 2000)
+        Attribute.from_database(attr.name.clone, data, Type::String.new)
+      end
+
+      (1..100).each do |i|
+        name = i.to_s
+        expect(new_attributes.fetch_value(name)).to eq('-' * 2000)
+      end
+    end
+
+    specify "gc during deep_dup" do
+      attribute_hash = (1..100).map do |i|
+        name = i.to_s
+        # A big integer to make sure there allocations happen during casting
+        value = '7' * 2000
+        [name, Attribute.from_database(name, value, Type::String.new)]
+      end.to_h
+      attributes = AttributeSet.new(attribute_hash)
+      # make sure the values cached so #dup gets called on them
+      attributes.each_value(&:value)
+
+      begin
+        GC.stress = true
+        new_attributes = attributes.deep_dup
+      ensure
+        GC.stress = false
+      end
+
+      (1..100).each do |i|
+        name = i.to_s
+        expect(new_attributes.fetch_value(name)).to eq('7' * 2000)
+      end
+    end
   end
 end
