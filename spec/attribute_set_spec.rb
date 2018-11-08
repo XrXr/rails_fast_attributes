@@ -322,12 +322,12 @@ module ActiveModel
     specify "gc during deep_dup" do
       attribute_hash = (1..100).map do |i|
         name = i.to_s
-        # A big integer to make sure there allocations happen during casting
+        # A long string to make sure there are allocations
         value = '7' * 2000
         [name, Attribute.from_database(name, value, Type::String.new)]
       end.to_h
       attributes = AttributeSet.new(attribute_hash)
-      # make sure the values cached so #dup gets called on them
+      # make sure the values are cached so #dup gets called on them
       attributes.each_value(&:value)
 
       begin
