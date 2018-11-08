@@ -250,7 +250,7 @@ impl Attribute {
         }
     }
 
-    fn initialize_dup(&mut self, other: &Attribute) {
+    fn initialize_dup<F: (Fn(ffi::VALUE) -> ffi::VALUE)>(&mut self, other: &Attribute, ruby_dup: F) {
         use self::Attribute::*;
         *self = match *other {
             Populated {
@@ -264,7 +264,7 @@ impl Attribute {
                 raw_value: raw_value.clone(),
                 ty,
                 source: source.clone(),
-                value: Cell::new(value.get().map(|v| unsafe { ffi::rb_obj_dup(v) })),
+                value: Cell::new(value.get().map(ruby_dup)),
             },
             _ => other.clone(),
         }
@@ -391,9 +391,9 @@ impl Attribute {
         }
     }
 
-    pub fn deep_dup(&self) -> Self {
+    pub fn deep_dup<F: (Fn(ffi::VALUE) -> ffi::VALUE)>(&self, ruby_dup: F) -> Self {
         let mut result = Self::default();
-        result.initialize_dup(self);
+        result.initialize_dup(self, ruby_dup);
         result
     }
 

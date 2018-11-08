@@ -385,7 +385,7 @@ extern "C" fn hash(this: ffi::VALUE) -> ffi::VALUE {
 extern "C" fn initialize_dup(this: ffi::VALUE, other: ffi::VALUE) -> ffi::VALUE {
     let this = unsafe { get_struct_mut::<Attribute>(this) };
     let other = unsafe { get_struct::<Attribute>(other) };
-    this.initialize_dup(other);
+    this.initialize_dup(other, |v| unsafe { ffi::rb_obj_dup(v) } );
     unsafe { ffi::Qnil }
 }
 

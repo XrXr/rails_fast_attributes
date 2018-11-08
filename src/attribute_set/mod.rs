@@ -109,9 +109,15 @@ impl AttributeSet {
     }
 
     fn deep_dup(&self) -> Self {
+        let keep_alive = unsafe { ffi::rb_ary_new_capa(self.attributes.len() as isize) };
+
         let attributes = self.attributes
             .iter()
-            .map(|(&k, v)| (k, v.deep_dup()))
+            .map(|(&k, v)| (k, v.deep_dup(|v| {
+                let duped = unsafe { ffi::rb_obj_dup(v) };
+                unsafe { ffi::rb_ary_push(keep_alive, duped) };
+                duped
+            })))
             .collect();
         Self::new(attributes)
     }
